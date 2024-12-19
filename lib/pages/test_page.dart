@@ -75,7 +75,8 @@ class TestPage extends StatefulWidget {
 }
 
 class _TestPageState extends State<TestPage> {
-  int? selectedOption;
+  int selectedOption = 0;
+  int previouslySelectedOption = 0;
   int currentQuestionIndex = 0;
   late int remainingTimeInSeconds = 0; // Remaining time in seconds
   Timer? _timer;
@@ -145,9 +146,8 @@ class _TestPageState extends State<TestPage> {
 
   void handleOptionSelection(int optionNumber) {
     setState(() {
-      selectedOption = optionNumber; // Store the selected option
+      selectedOption = optionNumber;
     });
-    print("Selected option: $optionNumber");
   }
 
   @override
@@ -193,8 +193,6 @@ class _TestPageState extends State<TestPage> {
                 ],
               ),
             ),
-
-            // Progress Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
@@ -270,12 +268,13 @@ class _TestPageState extends State<TestPage> {
                           fit: BoxFit.contain,
                         ),
                       const SizedBox(height: 16),
-                      ...currentQuestion.options.map(
-                            (option) => OptionTile(
-                          option: option,
-                          onOptionSelected: handleOptionSelection,
-                        ),
-                      ),
+                ...currentQuestion.options.map((option) {
+                    return OptionTile(
+                      option: option,
+                      onOptionSelected: handleOptionSelection,
+                      isSelected: selectedOption == option.optionNumber,
+                      );
+                    }).toList(),
                     ],
                   ),
                 ),

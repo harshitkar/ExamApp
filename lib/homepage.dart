@@ -12,6 +12,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<TestData> tests = [];
+  bool noTestsPosted = false;
 
   @override
   void initState() {
@@ -22,10 +23,13 @@ class _HomePageState extends State<HomePage> {
   // Load test data from local storage or any other source
   Future<void> _loadTestData() async {
     try {
-      // Assuming `loadFromLocalDatabase` is a method in TestData to get the list of tests
       List<TestData> loadedTests = await TestData.getAllTestsFromLocalDatabase();
       setState(() {
-        tests = loadedTests;
+        if (loadedTests.isEmpty) {
+          noTestsPosted = true;
+        } else {
+          tests = loadedTests;
+        }
       });
     } catch (e) {
       print('Error loading test data: $e');
@@ -33,6 +37,29 @@ class _HomePageState extends State<HomePage> {
         SnackBar(content: Text('Failed to load test data: $e')),
       );
     }
+  }
+
+  // Function to delete a test from the list and local database
+  Future<void> _deleteTest(int index) async {
+    final testId = tests[index].testId;
+    try {
+      await TestData.deleteFromLocalDatabase(testId);  // Delete from local storage
+      setState(() {
+        tests.removeAt(index);  // Remove from the list
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Test deleted successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete test: $e')),
+      );
+    }
+    setState(() {
+      if(tests.isEmpty) {
+        noTestsPosted = true;
+      }
+    });
   }
 
   @override
@@ -55,7 +82,9 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: tests.isEmpty
-          ? const Center(child: CircularProgressIndicator())  // Loading indicator until data is fetched
+          ? !noTestsPosted
+          ? const Center(child: CircularProgressIndicator())
+          : const Text("No test Posted Yet")
           : ListView.builder(
         itemCount: tests.length,
         itemBuilder: (context, index) {
@@ -82,6 +111,40 @@ class _HomePageState extends State<HomePage> {
                   ),
                 );
               },
+              trailing: IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () async {
+                  // Show a confirmation dialog before deleting
+                  bool? confirmDelete = await showDialog<bool>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Confirm Delete'),
+                        content: const Text('Are you sure you want to delete this test?'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(false);  // Dismiss dialog
+                            },
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(true);  // Confirm delete
+                            },
+                            child: const Text('Delete'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+
+                  // If confirmed, delete the test
+                  if (confirmDelete == true) {
+                    await _deleteTest(index);
+                  }
+                },
+              ),
             ),
           );
         },

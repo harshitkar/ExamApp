@@ -11,6 +11,7 @@ class TestData {
   DateTime startFrom;
   DateTime deadlineTime;
   int testTime;
+  int result;  // Added result field
 
   TestData({
     String? testId,
@@ -20,6 +21,7 @@ class TestData {
     DateTime? startFrom,
     DateTime? deadlineTime,
     this.testTime = 0,
+    this.result = -1,  // Initialize result with a default value
   })  : testId = testId ?? RandomIdGenerator.generateTestId(),
         questions = questions ?? [],
         postedAt = postedAt ?? DateTime.now(),
@@ -35,6 +37,7 @@ class TestData {
       'startFrom': startFrom.toIso8601String(),
       'deadlineTime': deadlineTime.toIso8601String(),
       'testTime': testTime,
+      'result': result,  // Include result in the toJson method
     };
   }
 
@@ -45,18 +48,18 @@ class TestData {
       questions: (json['questions'] as List)
           .map((q) => QuestionData.fromJson(q))
           .toList()
-          ..sort((a, b) => a.questionNumber.compareTo(b.questionNumber)),
+        ..sort((a, b) => a.questionNumber.compareTo(b.questionNumber)),
       postedAt: DateTime.parse(json['postedAt']),
       startFrom: DateTime.parse(json['startFrom']),
       deadlineTime: DateTime.parse(json['deadlineTime']),
       testTime: json['testTime'],
+      result: json['result'],  // Parse result from JSON
     );
   }
 
   Future<void> saveToLocalDatabase() async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> allTests =
-        prefs.getStringList('tests') ?? [];
+    List<String> allTests = prefs.getStringList('tests') ?? [];
     while (allTests.contains(testId)) {
       RandomIdGenerator.generateTestId();
     }
@@ -86,12 +89,16 @@ class TestData {
     final prefs = await SharedPreferences.getInstance();
     List<String> allTests = prefs.getStringList('tests') ?? [];
     List<TestData> tests = [];
+
     for (String testId in allTests) {
       String? testJson = prefs.getString(testId);
       if (testJson != null) {
         tests.add(TestData.fromJson(jsonDecode(testJson)));
       }
     }
+
+    tests.sort((a, b) => a.postedAt.compareTo(b.postedAt));
+
     return tests;
   }
 }

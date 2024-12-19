@@ -6,44 +6,34 @@ import '../models/option_data.dart';
 
 class OptionTile extends StatefulWidget {
   final OptionData option;
-  final Function(int selectedOption) onOptionSelected;
+  final Function(int optionNumber) onOptionSelected;
+  final bool isSelected;
 
   const OptionTile({
-    super.key,
+    Key? key,
     required this.option,
     required this.onOptionSelected,
-  });
+    required this.isSelected,
+  }) : super(key: key);
 
   @override
   _OptionTileState createState() => _OptionTileState();
 }
 
 class _OptionTileState extends State<OptionTile> {
-  late Uint8List? _imageData;
   bool isSelected = false;
 
   @override
   void initState() {
     super.initState();
-    _imageData = widget.option.image;
   }
 
   void _onOptionTapped() {
-    setState(() {
-      isSelected = !isSelected;  // Toggle selection state
-    });
-
     widget.onOptionSelected(widget.option.optionNumber);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Print the image data length (for debugging)
-    if (_imageData != null) {
-      print("Image data length: ${_imageData!.length}");
-    } else {
-      print("No image provided");
-    }
 
     return Column(
       children: [
@@ -52,7 +42,7 @@ class _OptionTileState extends State<OptionTile> {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              border: Border.all(color: isSelected ? Colors.green : Colors.grey[100]!),
+              border: Border.all(color: (widget.isSelected) ? Colors.green : Colors.grey[100]!),
               borderRadius: BorderRadius.circular(8.0),
               color: Colors.white,
             ),
@@ -72,10 +62,11 @@ class _OptionTileState extends State<OptionTile> {
                       ),
                       if (widget.option.image != null)
                         const SizedBox(height: 8),
-                      Image.memory(
-                        widget.option.image!,
-                        fit: BoxFit.fill,
-                      ),
+                      if (widget.option.image != null)
+                        Image.memory(
+                          widget.option.image!,
+                          fit: BoxFit.fill,
+                        ),
                     ],
                   ),
                 ),
