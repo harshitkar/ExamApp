@@ -37,8 +37,8 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
 
   @override
   void initState() {
-    super.initState();
     _initializeTextControllers();
+    super.initState();
   }
 
   void _initializeTextControllers() {
@@ -111,6 +111,7 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
     if (index >= 0 && index < _questions.length) {
       setState(() {
         _currentQuestionIndex = index;
+        _initializeTextControllers();
       });
     }
   }
@@ -214,6 +215,12 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
     );
   }
 
+  void _onSetCorrectOption(int value) {
+    setState(() {
+      _questions[_currentQuestionIndex].correctOptionIndex = value;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentQuestion = _questions[_currentQuestionIndex];
@@ -306,6 +313,8 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
                     }),
                   ],
                   questionIndex: _currentQuestionIndex,
+                  correctOptionIndex: currentQuestion.correctOptionIndex,
+                  onSetCorrectOption: _onSetCorrectOption,
                 ),
                 if (imageFile != null)
                   ElevatedButton(

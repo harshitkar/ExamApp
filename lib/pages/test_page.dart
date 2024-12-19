@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../homepage.dart';
 import '../models/option_data.dart';
 import '../models/question_data.dart';
 import '../models/test_data.dart';
@@ -75,7 +76,7 @@ class TestPage extends StatefulWidget {
 }
 
 class _TestPageState extends State<TestPage> {
-  int selectedOption = 0;
+  late List<int?> selectedOptions;
   int previouslySelectedOption = 0;
   int currentQuestionIndex = 0;
   late int remainingTimeInSeconds = 0; // Remaining time in seconds
@@ -84,6 +85,7 @@ class _TestPageState extends State<TestPage> {
   @override
   void initState() {
     super.initState();
+    selectedOptions = List<int?>.filled(widget.testData.questions.length, null);
     remainingTimeInSeconds = widget.testData.testTime * 60;
     _startTimer();
 
@@ -146,8 +148,83 @@ class _TestPageState extends State<TestPage> {
 
   void handleOptionSelection(int optionNumber) {
     setState(() {
-      selectedOption = optionNumber;
+      selectedOptions[currentQuestionIndex] = optionNumber;
     });
+  }
+
+  void _onSubmitCallback() {
+    _showSubmitConfirmationDialog();
+  }
+
+  void _showSubmitConfirmationDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Submit Test?"),
+          content: const Text("Are you sure you want to submit the test?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                _computeAndShowResult(); // Compute and display result
+              },
+              child: const Text("Submit"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _computeAndShowResult() {
+    // Compute the result (example logic; replace with your own)
+    final totalQuestions = widget.testData.questions.length;
+    int correctAnswers = 0;
+
+    for (int i = 0; i < totalQuestions; i++) {
+      final question = widget.testData.questions[i];
+      if (question.correctOptionIndex == selectedOptions[i]) {
+        correctAnswers++;
+      }
+    }
+
+    final result = ((correctAnswers / totalQuestions) * 100).round();
+
+    // Show the result dialog
+    _showResultDialog(result);
+  }
+
+  void _showResultDialog(int result) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Test Submitted"),
+          content: Text("Your score is $result%."),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomePage()),
+                      (route) => false,
+                );
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -272,7 +349,7 @@ class _TestPageState extends State<TestPage> {
                     return OptionTile(
                       option: option,
                       onOptionSelected: handleOptionSelection,
-                      isSelected: selectedOption == option.optionNumber,
+                      isSelected: selectedOptions[currentQuestionIndex] == option.optionNumber,
                       );
                     }).toList(),
                     ],
@@ -294,9 +371,7 @@ class _TestPageState extends State<TestPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: ElevatedButton(
-                onPressed: () {
-                  // Submit test logic
-                },
+                onPressed: _onSubmitCallback,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0A1D37),
                   padding: const EdgeInsets.symmetric(vertical: 12),

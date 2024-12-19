@@ -74,8 +74,6 @@ class SelectionRow extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-
-          // Text Field for Displaying Selected Text
           TextField(
             controller: textController,
             maxLines: null,

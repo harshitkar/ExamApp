@@ -11,7 +11,7 @@ class TestData {
   DateTime startFrom;
   DateTime deadlineTime;
   int testTime;
-  int result;  // Added result field
+  int result;
 
   TestData({
     String? testId,
@@ -100,5 +100,16 @@ class TestData {
     tests.sort((a, b) => a.postedAt.compareTo(b.postedAt));
 
     return tests;
+  }
+
+  void updateTestData(TestData updatedTestData) async {
+    testName = updatedTestData.testName;
+    questions = updatedTestData.questions;
+    postedAt = updatedTestData.postedAt;
+    startFrom = updatedTestData.startFrom;
+    deadlineTime = updatedTestData.deadlineTime;
+    testTime = updatedTestData.testTime;
+    result = updatedTestData.result;
+    await saveToLocalDatabase();
   }
 }
