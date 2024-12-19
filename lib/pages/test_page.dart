@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../models/option_data.dart';
 import '../models/question_data.dart';
-import '../models/test_data.dart'; // Import your models
+import '../models/test_data.dart';
 import '../widgets/option_tile.dart';
 import '../widgets/question_navigation_widget.dart';
 
@@ -13,11 +13,10 @@ void main() {
 }
 
 class ExamEaseApp extends StatelessWidget {
-  const ExamEaseApp({Key? key}) : super(key: key);
+  const ExamEaseApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Hardcoded TestData with questions and options
     final testData = TestData(
       testId: "w8qihcwd",
       testName: "Sample Test",
@@ -76,6 +75,7 @@ class TestPage extends StatefulWidget {
 }
 
 class _TestPageState extends State<TestPage> {
+  int? selectedOption;
   int currentQuestionIndex = 0;
   late int remainingTimeInSeconds = 0; // Remaining time in seconds
   Timer? _timer;
@@ -141,6 +141,13 @@ class _TestPageState extends State<TestPage> {
     final int minutes = seconds ~/ 60;
     final int remainingSeconds = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  void handleOptionSelection(int optionNumber) {
+    setState(() {
+      selectedOption = optionNumber; // Store the selected option
+    });
+    print("Selected option: $optionNumber");
   }
 
   @override
@@ -255,12 +262,18 @@ class _TestPageState extends State<TestPage> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      if (currentQuestion.questionImage != null)
+                        Image.memory(
+                          currentQuestion.questionImage!,
+                          width: double.infinity,
+                          fit: BoxFit.contain,
+                        ),
                       const SizedBox(height: 16),
-
-                      // Option Tiles
                       ...currentQuestion.options.map(
                             (option) => OptionTile(
-                          optionText: "${String.fromCharCode(65 + option.optionNumber - 1)}. ${option.optionText}",
+                          option: option,
+                          onOptionSelected: handleOptionSelection,
                         ),
                       ),
                     ],

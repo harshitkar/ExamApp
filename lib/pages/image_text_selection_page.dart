@@ -5,6 +5,8 @@ import 'package:crop_your_image/crop_your_image.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:ocr_app/models/test_data.dart';
+import 'package:ocr_app/pages/test_options_page.dart';
 import 'package:ocr_app/services/text_recognition_service.dart';
 import 'package:ocr_app/widgets/image_crop_widget.dart';
 import 'package:ocr_app/widgets/text_selection_panel.dart';
@@ -13,8 +15,7 @@ import '../models/question_data.dart';
 import '../widgets/question_navigation_widget.dart';
 
 class ImageTextSelectionPage extends StatefulWidget {
-
-  const ImageTextSelectionPage({Key? key}) : super(key: key);
+  const ImageTextSelectionPage({super.key});
 
   @override
   State<ImageTextSelectionPage> createState() => _ImageTextSelectionPageState();
@@ -31,6 +32,32 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
   bool _isCroppingEnabledForTextExtraction = false;
   bool _isCroppingEnabledForImageCapture = false;
   final ImagePicker _picker = ImagePicker();
+  late List<TextEditingController> _textControllers;
+  bool _isTextSyncInProgress = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeTextControllers();
+  }
+
+  void _initializeTextControllers() {
+    _textControllers = [
+      TextEditingController(text: _questions[_currentQuestionIndex].questionText)
+        ..addListener(() {
+          if (!_isTextSyncInProgress && !_isCroppingEnabledForTextExtraction) {
+            _questions[_currentQuestionIndex].questionText = _textControllers[0].text;
+          }
+        }),
+      for (int i = 0; i < _questions[_currentQuestionIndex].options.length; i++)
+        TextEditingController(text: _questions[_currentQuestionIndex].options[i].optionText)
+          ..addListener(() {
+            if (!_isTextSyncInProgress && !_isCroppingEnabledForTextExtraction) {
+              _questions[_currentQuestionIndex].options[i].optionText = _textControllers[i + 1].text;
+            }
+          }),
+    ];
+  }
 
   Future<void> _getImage(ImageSource source) async {
     final XFile? pickedFile = await _picker.pickImage(source: source);
@@ -64,8 +91,8 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
     if (_questions.length > 1) {
       setState(() {
         _questions.removeAt(_currentQuestionIndex);
-        for(int i = _currentQuestionIndex; i < _questions.length; i++) {
-          _questions[_currentQuestionIndex].questionNumber --;
+        for (int i = _currentQuestionIndex; i < _questions.length; i++) {
+          _questions[i].questionNumber--;
         }
         _currentQuestionIndex = (_currentQuestionIndex > 0)
             ? _currentQuestionIndex - 1
@@ -88,24 +115,6 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
     }
   }
 
-  // void _navigateBackward() {
-  //   if (_currentQuestionIndex > 0) {
-  //     setState(() {
-  //       _currentQuestionIndex--;
-  //     });
-  //   }
-  // }
-  //
-  // void _navigateForward() {
-  //   if (_currentQuestionIndex < _questions.length - 1) {
-  //     setState(() {
-  //       _currentQuestionIndex++;
-  //     });
-  //   } else {
-  //     _addNewQuestion();
-  //   }
-  // }
-
   Future<void> _onCropped(CropResult cropResult) async {
     if (cropResult is CropSuccess) {
       final Uint8List croppedImage = cropResult.croppedImage;
@@ -127,17 +136,21 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
         final textBlocks = await TextRecognitionService.extractTextBlocks(tempFile);
         final extractedText = textBlocks.map((block) => block.text).join(' ');
 
-        if (!extractedText.isEmpty) {
+        if (extractedText.isNotEmpty) {
           setState(() {
+            _isTextSyncInProgress = true;  // Prevent syncing during text extraction
             if (_currentOptionIndex == -1) {
               currentQuestion.questionText = extractedText;
+              _textControllers[0].text = extractedText;
             } else {
               currentQuestion.options[_currentOptionIndex].optionText = extractedText;
+              _textControllers[_currentOptionIndex+1].text = extractedText;
             }
+            _isTextSyncInProgress = false;  // Allow syncing again
           });
         } else {
           Fluttertoast.showToast(
-            msg: "Try to select maximize the area to extract text",
+            msg: "Try to select and maximize the area to extract text",
             toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.BOTTOM,
           );
@@ -152,15 +165,12 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
   void _onCaptureImage(int optionIndex) {
     final currentQuestion = _questions[_currentQuestionIndex];
 
-    // If optionIndex is -1, we are dealing with the question image.
     if (optionIndex == -1) {
       if (currentQuestion.questionImage != null) {
-        // Deleting the question image if it exists.
         setState(() {
           currentQuestion.questionImage = null;
         });
       } else {
-        // Trigger cropping if there's no image to delete.
         _currentOptionIndex = optionIndex;
         setState(() {
           _isProcessing = true;
@@ -169,16 +179,13 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
         });
       }
     } else {
-      // If optionIndex is not -1, we are dealing with an option image.
       final currentOption = currentQuestion.options[optionIndex];
 
       if (currentOption.image != null) {
-        // Deleting the option image if it exists.
         setState(() {
           currentOption.image = null;
         });
       } else {
-        // Trigger cropping if there's no image to delete.
         _currentOptionIndex = optionIndex;
         setState(() {
           _isProcessing = true;
@@ -199,13 +206,12 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
   }
 
   void _onSave() {
-    final currentQuestion = _questions[_currentQuestionIndex];
-    print('Saved Question ${_currentQuestionIndex + 1}: ${currentQuestion.questionText}');
-    print('  Question Image: ${currentQuestion.questionImage != null ? "Image Captured" : "No Image"}');
-    for (int j = 0; j < currentQuestion.options.length; j++) {
-      print('  Option ${j + 1}: ${currentQuestion.options[j].optionText}');
-      print('  Image: ${currentQuestion.options[j].image != null ? "Image Captured" : "No Image"}');
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AdditionalTestOptionsPage(testData: TestData(questions: _questions)),
+      ),
+    );
   }
 
   @override
@@ -222,7 +228,8 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
             onPressed: _deleteCurrentQuestion,
           ),
           IconButton(
-            icon: const Icon(Icons.save),
+            icon: const Icon(Icons.done),
+            color: Colors.blue,
             onPressed: _onSave,
           ),
         ],
@@ -234,38 +241,44 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
             questions: List.generate(_questions.length, (index) => 'Q${index + 1}'),
             onNavigateToQuestion: _navigateToQuestion,
             onAddNewQuestion: _addNewQuestion,
-            scrollController: _scrollController
+            scrollController: _scrollController,
           ),
           Expanded(
             child: Stack(
               children: [
-                (imageFile != null) ?
-                ImageCropWidget(
-                    imageBytes: imageFile!.readAsBytesSync(),
-                    cropController: _cropController,
-                    onCropped: _onCropped,
-                    isProcessing: _isProcessing,
-                ) : Center(
+                (imageFile != null)
+                    ? ImageCropWidget(
+                  imageBytes: imageFile!.readAsBytesSync(),
+                  cropController: _cropController,
+                  onCropped: _onCropped,
+                  isProcessing: _isProcessing,
+                )
+                    : Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       ElevatedButton(
                         onPressed: () => _getImage(ImageSource.camera),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0A1D37),
+                          foregroundColor: Colors.white,
+                        ),
                         child: const Text('Capture Image'),
                       ),
                       const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () => _getImage(ImageSource.gallery),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0A1D37),
+                          foregroundColor: Colors.white,
+                        ),
                         child: const Text('Pick from Gallery'),
                       ),
                     ],
                   ),
                 ),
                 TextSelectionPanelDrawer(
-                  textControllers: [
-                    TextEditingController(text: currentQuestion.questionText),
-                    ...currentQuestion.options.map((o) => TextEditingController(text: o.optionText)),
-                  ],
+                  textControllers: _textControllers,
                   images: [
                     currentQuestion.questionImage,
                     ...currentQuestion.options.map((o) => o.image),
@@ -278,19 +291,40 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
                     5,
                         (i) => () => _onCaptureImage(i - 1),
                   ),
+                  onTextChangedCallbacks: [
+                        (newText) {
+                      setState(() {
+                        currentQuestion.questionText = newText;
+                      });
+                    },
+                    ...List.generate(currentQuestion.options.length, (i) {
+                      return (newText) {
+                        setState(() {
+                          currentQuestion.options[i].optionText = newText;
+                        });
+                      };
+                    }),
+                  ],
+                  questionIndex: _currentQuestionIndex,
                 ),
                 if (imageFile != null)
-                ElevatedButton(
-                  onPressed: () => {
-                    imageFile = null
-                  },
-                  child: const Text('Remove Image'),
-                ),
+                  ElevatedButton(
+                    onPressed: () => {
+                      setState(() {
+                        imageFile = null;
+                      })
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0A1D37),
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Remove Image'),
+                  ),
               ],
             ),
           ),
         ],
-      )
+      ),
     );
   }
 }

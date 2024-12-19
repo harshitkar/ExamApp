@@ -29,7 +29,7 @@ class ImageCropWidget extends StatelessWidget {
       interactive: true,
       maskColor: Colors.black45,
       initialRectBuilder: InitialRectBuilder.withArea(
-        const Rect.fromLTWH(50, 100, 200, 200),
+        const Rect.fromLTWH(100, 250, 200, 200),
       ),
       cornerDotBuilder: (size, edge) => DotControl(
         color: {
@@ -42,6 +42,14 @@ class ImageCropWidget extends StatelessWidget {
       willUpdateScale: (scale) => true,
       filterQuality: FilterQuality.high,
     )
-        : const CircularProgressIndicator();
+        : Column(
+          children: [
+            SizedBox(height: 40,),
+            Align(
+            alignment: Alignment.topCenter,
+            child: CircularProgressIndicator()
+                ),
+          ],
+        );
   }
 }
