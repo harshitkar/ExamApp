@@ -47,7 +47,7 @@ class _DraggableDrawerState extends State<DraggableDrawer> {
           height: MediaQuery.of(context).size.height * _childSize,
           width: MediaQuery.of(context).size.width,
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: Color(0xFFF5F5F5),
             borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
           ),

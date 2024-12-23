@@ -15,6 +15,7 @@ class TextSelectionPanelDrawer extends StatelessWidget {
   final ValueChanged<int> onSetCorrectOption;
   final int questionIndex;
   final int correctOptionIndex;
+  final void Function()? deleteCurrentQuestion;
 
   const TextSelectionPanelDrawer({
     Key? key,
@@ -26,6 +27,7 @@ class TextSelectionPanelDrawer extends StatelessWidget {
     required this.questionIndex,
     required this.onSetCorrectOption,
     required this.correctOptionIndex,
+    required this.deleteCurrentQuestion,
   }) : super(key: key);
 
   @override
@@ -37,13 +39,19 @@ class TextSelectionPanelDrawer extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Question ${questionIndex+1}',
-              style: const TextStyle(
-                color: Color(0xFF0A1D37),
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Text(
+                  'Question ${questionIndex+1}',
+                  style: const TextStyle(
+                    color: Color(0xFF0A1D37),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(onPressed: deleteCurrentQuestion, icon: const Icon(Icons.delete))
+              ],
             ),
             const SizedBox(height: 16),
             for (int i = 0; i < 5; i++) ...[

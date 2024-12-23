@@ -48,7 +48,7 @@ class _OptionTileState extends State<OptionTile> {
             ),
             child: Row(
               children: [
-                Text("${String.fromCharCode(65 + widget.option.optionNumber - 1)}. "),
+                Text("${String.fromCharCode(65 + widget.option.optionNumber)}. "),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

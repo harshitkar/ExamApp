@@ -9,63 +9,6 @@ import '../models/test_data.dart';
 import '../widgets/option_tile.dart';
 import '../widgets/question_navigation_widget.dart';
 
-void main() {
-  runApp(const ExamEaseApp());
-}
-
-class ExamEaseApp extends StatelessWidget {
-  const ExamEaseApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final testData = TestData(
-      testId: "w8qihcwd",
-      testName: "Sample Test",
-      testTime: 45,
-      questions: [
-        QuestionData(
-          questionNumber: 1,
-          questionText: "What is 2 + 2?",
-          options: [
-            OptionData(optionText: "3", optionNumber: 1),
-            OptionData(optionText: "4", optionNumber: 2),
-            OptionData(optionText: "5", optionNumber: 3),
-            OptionData(optionText: "6", optionNumber: 4),
-          ],
-          correctOptionIndex: 1,
-        ),
-        QuestionData(
-          questionNumber: 2,
-          questionText: "What is the capital of France?",
-          options: [
-            OptionData(optionText: "Berlin", optionNumber: 1),
-            OptionData(optionText: "Madrid", optionNumber: 2),
-            OptionData(optionText: "Paris", optionNumber: 3),
-            OptionData(optionText: "Rome", optionNumber: 4),
-          ],
-          correctOptionIndex: 2,
-        ),
-        QuestionData(
-          questionNumber: 3,
-          questionText: "What is the square root of 16?",
-          options: [
-            OptionData(optionText: "2", optionNumber: 1),
-            OptionData(optionText: "4", optionNumber: 2),
-            OptionData(optionText: "6", optionNumber: 3),
-            OptionData(optionText: "8", optionNumber: 4),
-          ],
-          correctOptionIndex: 1,
-        ),
-      ],
-    );
-
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: TestPage(testData: testData),
-    );
-  }
-}
-
 class TestPage extends StatefulWidget {
   final TestData testData;
 
@@ -167,16 +110,25 @@ class _TestPageState extends State<TestPage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
               child: const Text("Cancel"),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                _computeAndShowResult(); // Compute and display result
+                Navigator.of(context).pop();
+                _computeAndShowResult();
               },
-              child: const Text("Submit"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0A1D37),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text(
+                "Submit",
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
             ),
           ],
         );
@@ -198,7 +150,9 @@ class _TestPageState extends State<TestPage> {
 
     final result = ((correctAnswers / totalQuestions) * 100).round();
 
-    // Show the result dialog
+    widget.testData.result = result;
+    widget.testData.updateTestData();
+
     _showResultDialog(result);
   }
 
@@ -219,7 +173,16 @@ class _TestPageState extends State<TestPage> {
                       (route) => false,
                 );
               },
-              child: const Text("OK"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0A1D37),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text(
+                "OK",
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
             ),
           ],
         );

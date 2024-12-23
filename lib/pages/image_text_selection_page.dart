@@ -15,7 +15,12 @@ import '../models/question_data.dart';
 import '../widgets/question_navigation_widget.dart';
 
 class ImageTextSelectionPage extends StatefulWidget {
-  const ImageTextSelectionPage({super.key});
+  TestData testData;
+
+  ImageTextSelectionPage({
+    super.key,
+    required this.testData,
+  });
 
   @override
   State<ImageTextSelectionPage> createState() => _ImageTextSelectionPageState();
@@ -23,7 +28,7 @@ class ImageTextSelectionPage extends StatefulWidget {
 
 class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
   File? imageFile;
-  final List<QuestionData> _questions = [QuestionData()];
+  late List<QuestionData> _questions;
   int _currentQuestionIndex = 0;
   int _currentOptionIndex = -1;
   final CropController _cropController = CropController();
@@ -34,9 +39,12 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
   final ImagePicker _picker = ImagePicker();
   late List<TextEditingController> _textControllers;
   bool _isTextSyncInProgress = false;
+  bool isEditTest = false;
 
   @override
   void initState() {
+    isEditTest = widget.testData.testId != '';
+    _questions = widget.testData.questions;
     _initializeTextControllers();
     super.initState();
   }
@@ -74,6 +82,7 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
         questionNumber: _questions.length + 1,
       ));
       _currentQuestionIndex = _questions.length - 1;
+      _initializeTextControllers();
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -105,6 +114,7 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
         );
       });
     }
+    _initializeTextControllers();
   }
 
   void _navigateToQuestion(int index) {
@@ -210,7 +220,7 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AdditionalTestOptionsPage(testData: TestData(questions: _questions)),
+        builder: (context) => AdditionalTestOptionsPage(testData: widget.testData),
       ),
     );
   }
@@ -219,6 +229,7 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
     setState(() {
       _questions[_currentQuestionIndex].correctOptionIndex = value;
     });
+    print(value);
   }
 
   @override
@@ -226,113 +237,132 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
     final currentQuestion = _questions[_currentQuestionIndex];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Question ${_currentQuestionIndex + 1}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete),
-            tooltip: 'Delete Question',
-            onPressed: _deleteCurrentQuestion,
-          ),
-          IconButton(
-            icon: const Icon(Icons.done),
-            color: Colors.blue,
-            onPressed: _onSave,
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          QuestionNavigationPanel(
-            currentQuestionIndex: _currentQuestionIndex,
-            questions: List.generate(_questions.length, (index) => 'Q${index + 1}'),
-            onNavigateToQuestion: _navigateToQuestion,
-            onAddNewQuestion: _addNewQuestion,
-            scrollController: _scrollController,
-          ),
-          Expanded(
-            child: Stack(
-              children: [
-                (imageFile != null)
-                    ? ImageCropWidget(
-                  imageBytes: imageFile!.readAsBytesSync(),
-                  cropController: _cropController,
-                  onCropped: _onCropped,
-                  isProcessing: _isProcessing,
-                )
-                    : Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
                     children: [
-                      ElevatedButton(
-                        onPressed: () => _getImage(ImageSource.camera),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0A1D37),
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Capture Image'),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        tooltip: 'Back',
+                        onPressed: () => Navigator.pop(context),
                       ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () => _getImage(ImageSource.gallery),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0A1D37),
-                          foregroundColor: Colors.white,
+                      const SizedBox(width: 25),
+                      Text(
+                        isEditTest ? 'Edit Test' : 'Create Test',
+                        style: const TextStyle(
+                          fontSize: 24,
                         ),
-                        child: const Text('Pick from Gallery'),
                       ),
                     ],
                   ),
-                ),
-                TextSelectionPanelDrawer(
-                  textControllers: _textControllers,
-                  images: [
-                    currentQuestion.questionImage,
-                    ...currentQuestion.options.map((o) => o.image),
-                  ],
-                  onSelectTextCallbacks: List.generate(
-                    5,
-                        (i) => () => _onExtractText(i - 1),
+                  IconButton(
+                    icon: const Icon(Icons.done),
+                    tooltip: 'Save Test',
+                    onPressed: _onSave,
                   ),
-                  onCaptureImageCallbacks: List.generate(
-                    5,
-                        (i) => () => _onCaptureImage(i - 1),
-                  ),
-                  onTextChangedCallbacks: [
-                        (newText) {
-                      setState(() {
-                        currentQuestion.questionText = newText;
-                      });
-                    },
-                    ...List.generate(currentQuestion.options.length, (i) {
-                      return (newText) {
-                        setState(() {
-                          currentQuestion.options[i].optionText = newText;
-                        });
-                      };
-                    }),
-                  ],
-                  questionIndex: _currentQuestionIndex,
-                  correctOptionIndex: currentQuestion.correctOptionIndex,
-                  onSetCorrectOption: _onSetCorrectOption,
-                ),
-                if (imageFile != null)
-                  ElevatedButton(
-                    onPressed: () => {
-                      setState(() {
-                        imageFile = null;
-                      })
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0A1D37),
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Remove Image'),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+            // Body Content
+            QuestionNavigationPanel(
+              currentQuestionIndex: _currentQuestionIndex,
+              questions: List.generate(_questions.length, (index) => 'Q${index + 1}'),
+              onNavigateToQuestion: _navigateToQuestion,
+              onAddNewQuestion: _addNewQuestion,
+              scrollController: _scrollController,
+            ),
+            Expanded(
+              child: Stack(
+                children: [
+                  (imageFile != null)
+                      ? ImageCropWidget(
+                    imageBytes: imageFile!.readAsBytesSync(),
+                    cropController: _cropController,
+                    onCropped: _onCropped,
+                    isProcessing: _isProcessing,
+                  )
+                      : Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () => _getImage(ImageSource.camera),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0A1D37),
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Capture Image'),
+                        ),
+                        const SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: () => _getImage(ImageSource.gallery),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0A1D37),
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Pick from Gallery'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  TextSelectionPanelDrawer(
+                    textControllers: _textControllers,
+                    images: [
+                      currentQuestion.questionImage,
+                      ...currentQuestion.options.map((o) => o.image),
+                    ],
+                    onSelectTextCallbacks: List.generate(
+                      5,
+                          (i) => () => _onExtractText(i - 1),
+                    ),
+                    onCaptureImageCallbacks: List.generate(
+                      5,
+                          (i) => () => _onCaptureImage(i - 1),
+                    ),
+                    onTextChangedCallbacks: [
+                          (newText) {
+                        setState(() {
+                          currentQuestion.questionText = newText;
+                        });
+                      },
+                      ...List.generate(currentQuestion.options.length, (i) {
+                        return (newText) {
+                          setState(() {
+                            currentQuestion.options[i].optionText = newText;
+                          });
+                        };
+                      }),
+                    ],
+                    questionIndex: _currentQuestionIndex,
+                    correctOptionIndex: currentQuestion.correctOptionIndex,
+                    onSetCorrectOption: _onSetCorrectOption,
+                    deleteCurrentQuestion: _deleteCurrentQuestion
+                  ),
+                  if (imageFile != null)
+                    ElevatedButton(
+                      onPressed: () => {
+                        setState(() {
+                          imageFile = null;
+                        })
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0A1D37),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Remove Image'),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/random_id_generator.dart';
@@ -14,16 +15,15 @@ class TestData {
   int result;
 
   TestData({
-    String? testId,
+    this.testId = '',
     this.testName = '',
     List<QuestionData>? questions,
     DateTime? postedAt,
     DateTime? startFrom,
     DateTime? deadlineTime,
     this.testTime = 0,
-    this.result = -1,  // Initialize result with a default value
-  })  : testId = testId ?? RandomIdGenerator.generateTestId(),
-        questions = questions ?? [],
+    this.result = -1,
+  })  : questions = questions ?? [...List.generate(1, (index) => QuestionData())],
         postedAt = postedAt ?? DateTime.now(),
         startFrom = startFrom ?? DateTime.now(),
         deadlineTime = deadlineTime ?? DateTime.now();
@@ -102,14 +102,8 @@ class TestData {
     return tests;
   }
 
-  void updateTestData(TestData updatedTestData) async {
-    testName = updatedTestData.testName;
-    questions = updatedTestData.questions;
-    postedAt = updatedTestData.postedAt;
-    startFrom = updatedTestData.startFrom;
-    deadlineTime = updatedTestData.deadlineTime;
-    testTime = updatedTestData.testTime;
-    result = updatedTestData.result;
+  void updateTestData() async {
+    await deleteFromLocalDatabase(testId);
     await saveToLocalDatabase();
   }
 }

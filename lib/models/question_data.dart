@@ -20,7 +20,7 @@ class QuestionData {
     this.questionNumber = 0,
     this.correctOptionIndex = 0,
   })  : questionId = questionId ?? RandomIdGenerator.generateQuestionId(),
-        options = options ?? List.generate(4, (index) => OptionData(optionNumber: index + 1));
+        options = options ?? List.generate(4, (index) => OptionData(optionNumber: index));
 
   Map<String, dynamic> toJson() {
     return {

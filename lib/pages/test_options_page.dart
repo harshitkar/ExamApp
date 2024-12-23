@@ -23,23 +23,29 @@ class _AdditionalTestOptionsPageState extends State<AdditionalTestOptionsPage> {
 
   DateTime? _startDateTime;
   DateTime? _deadlineDateTime;
+  bool isEditTest = false;
 
   @override
   void initState() {
     super.initState();
-    _testNameController = TextEditingController(text: widget.testData.testName);
+    _testNameController = TextEditingController(
+        text: widget.testData.testName
+    );
     _startTimeController = TextEditingController(
         text: widget.testData.startFrom != null
             ? DateFormat('yyyy-MM-dd HH:mm').format(widget.testData.startFrom)
-            : '');
+            : ''
+    );
     _deadlineController = TextEditingController(
         text: widget.testData.deadlineTime != null
             ? DateFormat('yyyy-MM-dd HH:mm').format(widget.testData.deadlineTime)
-            : '');
+            : ''
+    );
     _testDurationController = TextEditingController(
         text: widget.testData.testTime > 0
             ? widget.testData.testTime.toString()
-            : '');
+            : ''
+    );
   }
 
   @override
@@ -91,16 +97,13 @@ class _AdditionalTestOptionsPageState extends State<AdditionalTestOptionsPage> {
     });
   }
 
-
   void _onSave() async {
     if (_formKey.currentState?.validate() ?? false) {
       widget.testData.testName = _testNameController.text;
       widget.testData.testTime = int.tryParse(_testDurationController.text) ?? 0;
 
       try {
-        // Save test data using the model class function
         await widget.testData.saveToLocalDatabase();
-        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Test saved successfully!')),
         );
@@ -119,7 +122,6 @@ class _AdditionalTestOptionsPageState extends State<AdditionalTestOptionsPage> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +143,10 @@ class _AdditionalTestOptionsPageState extends State<AdditionalTestOptionsPage> {
             children: [
               TextFormField(
                 controller: _testNameController,
-                decoration: const InputDecoration(labelText: 'Test Name'),
+                decoration: const InputDecoration(
+                  labelText: 'Test Name',
+                  border: OutlineInputBorder(),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a test name';
@@ -153,21 +158,30 @@ class _AdditionalTestOptionsPageState extends State<AdditionalTestOptionsPage> {
               TextFormField(
                 controller: _startTimeController,
                 readOnly: true,
-                decoration: const InputDecoration(labelText: 'Start Time'),
+                decoration: const InputDecoration(
+                  labelText: 'Start Time',
+                  border: OutlineInputBorder(),
+                ),
                 onTap: () => _pickDateTime(context, _startTimeController, true),
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _deadlineController,
                 readOnly: true,
-                decoration: const InputDecoration(labelText: 'Deadline'),
+                decoration: const InputDecoration(
+                  labelText: 'Deadline',
+                  border: OutlineInputBorder(),
+                ),
                 onTap: () => _pickDateTime(context, _deadlineController, false),
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _testDurationController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Test Duration (minutes)'),
+                decoration: const InputDecoration(
+                  labelText: 'Test Duration (minutes)',
+                  border: OutlineInputBorder(),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the test duration';
@@ -177,11 +191,6 @@ class _AdditionalTestOptionsPageState extends State<AdditionalTestOptionsPage> {
                   }
                   return null;
                 },
-              ),
-              const Spacer(),
-              ElevatedButton(
-                onPressed: _onSave,
-                child: const Text('Save & Continue'),
               ),
             ],
           ),

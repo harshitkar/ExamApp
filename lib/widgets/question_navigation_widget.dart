@@ -21,7 +21,7 @@ class QuestionNavigationPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF5F5F5), // Background matching TestPage
+      color: const Color(0xFFF5F5F5),
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: Row(
         children: [
