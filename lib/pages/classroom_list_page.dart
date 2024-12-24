@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:ocr_app/Holders/classroom_holder.dart';
 import 'package:ocr_app/pages/test_list_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/classroom_data.dart';
 
@@ -145,6 +148,68 @@ class _ClassroomListPageState extends State<ClassroomListPage> {
     }
   }
 
+  Future<void> _joinClassroomDialog() async {
+    final TextEditingController classroomIdController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Join Classroom'),
+          content: TextField(
+            controller: classroomIdController,
+            decoration: const InputDecoration(
+              labelText: 'Enter Classroom Code',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final classroomId = classroomIdController.text.trim();
+                if (classroomId.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Classroom code cannot be empty')),
+                  );
+                  return;
+                }
+                try {
+                  ClassroomData? classroom = await ClassroomData.loadClassroomData(classroomId);
+                  if (classroom != null) {
+                    print(1);
+                    await classroom.joinClassroom(widget.userId, 'student');
+                    setState(() {
+                      classrooms.add(classroom);
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Joined classroom successfully')),
+                    );
+                    Navigator.pop(context);
+                  } else {
+                    print(2);
+                    const SnackBar(content: Text('No classroom found'));
+                  }
+
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to join classroom: $e')),
+                  );
+                }
+              },
+              child: const Text('Join'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -172,7 +237,7 @@ class _ClassroomListPageState extends State<ClassroomListPage> {
             margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: ListTile(
               title: Text(classroom.classroomName),
-              subtitle: Text('Created on: ${classroom.createdAt}'),
+              subtitle: Text('Created on: ${classroom.createdAt}\ncode: ${classroom.classroomId}'),
               trailing: PopupMenuButton<int>(
                 onSelected: (value) {
                   if (value == 1) {
@@ -199,9 +264,21 @@ class _ClassroomListPageState extends State<ClassroomListPage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addClassroomDialog,
-        child: const Icon(Icons.add),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            onPressed: _addClassroomDialog,
+            tooltip: 'Add Classroom',
+            child: const Icon(Icons.add),
+          ),
+          const SizedBox(height: 10),
+          FloatingActionButton(
+            onPressed: _joinClassroomDialog,
+            tooltip: 'Join Classroom',
+            child: const Icon(Icons.group_add),
+          ),
+        ],
       ),
     );
   }

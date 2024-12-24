@@ -1,6 +1,6 @@
 import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ocr_app/services/random_id_generator.dart';
 
 class ResultData {
   String userId;

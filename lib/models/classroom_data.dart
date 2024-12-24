@@ -34,12 +34,24 @@ class ClassroomData {
   Future<void> saveClassroom() async {
     final prefs = await SharedPreferences.getInstance();
     final classrooms = prefs.getStringList('classrooms') ?? [];
-    classroomId = RandomIdGenerator.generateId();
+    classroomId = RandomIdGenerator.generateClassroomId();
     while (classrooms.contains(classroomId)) {
-      classroomId = RandomIdGenerator.generateId();
+      classroomId = RandomIdGenerator.generateClassroomId();
     }
     classrooms.add(jsonEncode(toJson()));
     await prefs.setStringList('classrooms', classrooms);
+  }
+
+  static Future<ClassroomData?> loadClassroomData(String classroomId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final classroomsJson = prefs.getStringList('classrooms') ?? [];
+    for (final jsonStr in classroomsJson) {
+      final classroom = ClassroomData.fromJson(jsonDecode(jsonStr));
+      if (classroom.classroomId == classroomId) {
+        return classroom;
+      }
+    }
+    return null;
   }
 
   static Future<void> deleteClassroom(String classroomId) async {
