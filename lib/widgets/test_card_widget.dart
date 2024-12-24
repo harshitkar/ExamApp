@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ocr_app/models/test_data.dart';
-import 'package:ocr_app/pages/test_page.dart';
+import 'package:ocr_app/pages/test_attempt_page.dart';
 import 'package:ocr_app/widgets/test_action_button.dart';
-import 'delete_test_dialog.dart';
 
 class TestCardWidget extends StatelessWidget {
   final TestData test;
@@ -18,18 +17,17 @@ class TestCardWidget extends StatelessWidget {
     super.key,
   });
 
-  // Function to format dates
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
     if (difference.inDays == 0) {
-      return "Today, ${DateFormat.Hm().format(date)}"; // Today with time
+      return "Today, ${DateFormat.Hm().format(date)}";
     } else if (difference.inDays == 1) {
-      return "Yesterday, ${DateFormat.Hm().format(date)}"; // Yesterday with time
+      return "Yesterday, ${DateFormat.Hm().format(date)}";
     } else if (difference.inDays == -1) {
-      return "Tomorrow, ${DateFormat.Hm().format(date)}"; // Tomorrow with time
+      return "Tomorrow, ${DateFormat.Hm().format(date)}";
     } else {
-      return DateFormat('d MMM yyyy, H:mm').format(date); // Full date with time
+      return DateFormat('d MMM yyyy, H:mm').format(date);
     }
   }
 
@@ -49,7 +47,7 @@ class TestCardWidget extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => TestPage(testData: test),
+                builder: (context) => TestAttemptPage(testData: test),
               ),
             );
           }
@@ -88,7 +86,7 @@ class TestCardWidget extends StatelessWidget {
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.access_time,
                                   size: 16,
                                   color: Colors.white70,
@@ -167,7 +165,6 @@ class TestCardWidget extends StatelessWidget {
                 ],
               ),
             ),
-            // Stack to display "Posted At" in the bottom right
             Positioned(
               bottom: 8,
               right: 16,

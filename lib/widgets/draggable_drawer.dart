@@ -5,10 +5,10 @@ class DraggableDrawer extends StatefulWidget {
   final Widget child;
 
   const DraggableDrawer({
-    Key? key,
+    super.key,
     required this.initialSize,
     required this.child,
-  }) : super(key: key);
+  });
 
   @override
   _DraggableDrawerState createState() => _DraggableDrawerState();

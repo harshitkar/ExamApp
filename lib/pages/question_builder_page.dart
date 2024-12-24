@@ -6,27 +6,27 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ocr_app/models/test_data.dart';
-import 'package:ocr_app/pages/test_options_page.dart';
+import 'package:ocr_app/pages/test_details_page.dart';
 import 'package:ocr_app/services/text_recognition_service.dart';
 import 'package:ocr_app/widgets/image_crop_widget.dart';
-import 'package:ocr_app/widgets/text_selection_panel.dart';
+import 'package:ocr_app/widgets/option_editor_drawer.dart';
 
 import '../models/question_data.dart';
 import '../widgets/question_navigation_widget.dart';
 
-class ImageTextSelectionPage extends StatefulWidget {
-  TestData testData;
+class QuestionBuilderPage extends StatefulWidget {
+  final TestData testData;
 
-  ImageTextSelectionPage({
+  const QuestionBuilderPage({
     super.key,
     required this.testData,
   });
 
   @override
-  State<ImageTextSelectionPage> createState() => _ImageTextSelectionPageState();
+  State<QuestionBuilderPage> createState() => _QuestionBuilderPageState();
 }
 
-class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
+class _QuestionBuilderPageState extends State<QuestionBuilderPage> {
   File? imageFile;
   late List<QuestionData> _questions;
   int _currentQuestionIndex = 0;
@@ -149,7 +149,7 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
 
         if (extractedText.isNotEmpty) {
           setState(() {
-            _isTextSyncInProgress = true;  // Prevent syncing during text extraction
+            _isTextSyncInProgress = true;
             if (_currentOptionIndex == -1) {
               currentQuestion.questionText = extractedText;
               _textControllers[0].text = extractedText;
@@ -157,7 +157,7 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
               currentQuestion.options[_currentOptionIndex].optionText = extractedText;
               _textControllers[_currentOptionIndex+1].text = extractedText;
             }
-            _isTextSyncInProgress = false;  // Allow syncing again
+            _isTextSyncInProgress = false;
           });
         } else {
           Fluttertoast.showToast(
@@ -220,7 +220,7 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AdditionalTestOptionsPage(testData: widget.testData),
+        builder: (context) => TestDetailsPage(testData: widget.testData),
       ),
     );
   }
@@ -229,7 +229,6 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
     setState(() {
       _questions[_currentQuestionIndex].correctOptionIndex = value;
     });
-    print(value);
   }
 
   @override
@@ -312,7 +311,7 @@ class _ImageTextSelectionPageState extends State<ImageTextSelectionPage> {
                       ],
                     ),
                   ),
-                  TextSelectionPanelDrawer(
+                  OptionEditorDrawer(
                     textControllers: _textControllers,
                     images: [
                       currentQuestion.questionImage,

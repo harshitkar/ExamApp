@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ocr_app/homepage.dart';
+import 'package:ocr_app/pages/test_dashboard.dart';
 import '../models/test_data.dart';
 
-class AdditionalTestOptionsPage extends StatefulWidget {
+class TestDetailsPage extends StatefulWidget {
   final TestData testData;
 
-  const AdditionalTestOptionsPage({Key? key, required this.testData}) : super(key: key);
+  const TestDetailsPage({super.key, required this.testData});
 
   @override
-  State<AdditionalTestOptionsPage> createState() =>
-      _AdditionalTestOptionsPageState();
+  State<TestDetailsPage> createState() =>
+      _TestDetailsPageState();
 }
 
-class _AdditionalTestOptionsPageState extends State<AdditionalTestOptionsPage> {
+class _TestDetailsPageState extends State<TestDetailsPage> {
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController _testNameController;
@@ -32,14 +32,10 @@ class _AdditionalTestOptionsPageState extends State<AdditionalTestOptionsPage> {
         text: widget.testData.testName
     );
     _startTimeController = TextEditingController(
-        text: widget.testData.startFrom != null
-            ? DateFormat('yyyy-MM-dd HH:mm').format(widget.testData.startFrom)
-            : ''
+        text: DateFormat('yyyy-MM-dd HH:mm').format(widget.testData.startFrom)
     );
     _deadlineController = TextEditingController(
-        text: widget.testData.deadlineTime != null
-            ? DateFormat('yyyy-MM-dd HH:mm').format(widget.testData.deadlineTime)
-            : ''
+        text: DateFormat('yyyy-MM-dd HH:mm').format(widget.testData.deadlineTime)
     );
     _testDurationController = TextEditingController(
         text: widget.testData.testTime > 0
@@ -107,15 +103,14 @@ class _AdditionalTestOptionsPageState extends State<AdditionalTestOptionsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Test saved successfully!')),
         );
-        // Navigate back
+
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => HomePage()),
+          MaterialPageRoute(builder: (context) => const TestDashboard()),
               (route) => false,
         );
 
       } catch (e) {
-        // Show error message if saving fails
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to save test: $e')),
         );

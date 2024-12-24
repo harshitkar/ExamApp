@@ -2,27 +2,25 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../homepage.dart';
-import '../models/option_data.dart';
-import '../models/question_data.dart';
+import 'test_dashboard.dart';
 import '../models/test_data.dart';
 import '../widgets/option_tile.dart';
 import '../widgets/question_navigation_widget.dart';
 
-class TestPage extends StatefulWidget {
+class TestAttemptPage extends StatefulWidget {
   final TestData testData;
 
-  const TestPage({required this.testData, Key? key}) : super(key: key);
+  const TestAttemptPage({required this.testData, super.key});
 
   @override
-  State<TestPage> createState() => _TestPageState();
+  State<TestAttemptPage> createState() => _TestAttemptPageState();
 }
 
-class _TestPageState extends State<TestPage> {
+class _TestAttemptPageState extends State<TestAttemptPage> {
   late List<int?> selectedOptions;
   int previouslySelectedOption = 0;
   int currentQuestionIndex = 0;
-  late int remainingTimeInSeconds = 0; // Remaining time in seconds
+  late int remainingTimeInSeconds = 0;
   Timer? _timer;
 
   @override
@@ -169,7 +167,7 @@ class _TestPageState extends State<TestPage> {
               onPressed: () {
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
+                  MaterialPageRoute(builder: (context) => const TestDashboard()),
                       (route) => false,
                 );
               },
@@ -314,7 +312,7 @@ class _TestPageState extends State<TestPage> {
                       onOptionSelected: handleOptionSelection,
                       isSelected: selectedOptions[currentQuestionIndex] == option.optionNumber,
                       );
-                    }).toList(),
+                    }),
                     ],
                   ),
                 ),

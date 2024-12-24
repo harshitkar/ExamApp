@@ -1,9 +1,7 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crop_your_image/crop_your_image.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 class ImageCropWidget extends StatelessWidget {
   final Uint8List imageBytes;
@@ -12,12 +10,12 @@ class ImageCropWidget extends StatelessWidget {
   final bool isProcessing;
 
   const ImageCropWidget({
-    Key? key,
+    super.key,
     required this.imageBytes,
     required this.cropController,
     required this.onCropped,
     required this.isProcessing,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -41,15 +39,15 @@ class ImageCropWidget extends StatelessWidget {
       ),
       willUpdateScale: (scale) => true,
       filterQuality: FilterQuality.high,
-    )
-        : Column(
-          children: [
-            SizedBox(height: 40,),
-            Align(
-            alignment: Alignment.topCenter,
-            child: CircularProgressIndicator()
-                ),
-          ],
-        );
+    ) :
+    const Column(
+      children: [
+        SizedBox(height: 40),
+        Align(
+          alignment: Alignment.topCenter,
+          child: CircularProgressIndicator()
+        ),
+      ],
+    );
   }
 }

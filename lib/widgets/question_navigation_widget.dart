@@ -9,14 +9,14 @@ class QuestionNavigationPanel extends StatelessWidget {
   final bool addNewQuestionEnabled;
 
   const QuestionNavigationPanel({
-    Key? key,
+    super.key,
     required this.currentQuestionIndex,
     required this.questions,
     required this.onNavigateToQuestion,
     this.onAddNewQuestion,
     this.scrollController,
     this.addNewQuestionEnabled = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

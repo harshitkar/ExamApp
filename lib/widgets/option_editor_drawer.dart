@@ -1,12 +1,11 @@
 import 'dart:typed_data';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:ocr_app/widgets/selection_row.dart';
+import 'package:ocr_app/widgets/text_image_selection_row.dart';
 
 import 'draggable_drawer.dart';
 
-class TextSelectionPanelDrawer extends StatelessWidget {
+class OptionEditorDrawer extends StatelessWidget {
   final List<TextEditingController> textControllers;
   final List<Uint8List?> images;
   final List<VoidCallback> onSelectTextCallbacks;
@@ -17,8 +16,8 @@ class TextSelectionPanelDrawer extends StatelessWidget {
   final int correctOptionIndex;
   final void Function()? deleteCurrentQuestion;
 
-  const TextSelectionPanelDrawer({
-    Key? key,
+  const OptionEditorDrawer({
+    super.key,
     required this.textControllers,
     required this.images,
     required this.onSelectTextCallbacks,
@@ -28,7 +27,7 @@ class TextSelectionPanelDrawer extends StatelessWidget {
     required this.onSetCorrectOption,
     required this.correctOptionIndex,
     required this.deleteCurrentQuestion,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +54,7 @@ class TextSelectionPanelDrawer extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             for (int i = 0; i < 5; i++) ...[
-              SelectionRow(
+              TextImageSelectionRow(
                 text: i == 0 ? 'Question' : 'Option $i',
                 textController: textControllers[i],
                 image: images[i],

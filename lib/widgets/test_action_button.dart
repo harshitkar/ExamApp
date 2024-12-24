@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ocr_app/models/test_data.dart';
-import 'package:ocr_app/pages/test_page.dart';
+import 'package:ocr_app/pages/test_attempt_page.dart';
 
 class TestActionButtons extends StatelessWidget {
   final TestData test;
@@ -15,7 +15,7 @@ class TestActionButtons extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => TestPage(testData: test),
+            builder: (context) => TestAttemptPage(testData: test),
           ),
         );
       },

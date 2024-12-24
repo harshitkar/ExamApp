@@ -16,7 +16,6 @@ class OptionData {
     this.optionNumber = 0,
   }) : optionId = optionId ?? RandomIdGenerator.generateOptionId();
 
-  // Convert to JSON
   Map<String, dynamic> toJson() {
     return {
       'optionId': optionId,
@@ -26,7 +25,6 @@ class OptionData {
     };
   }
 
-  // Create from JSON
   factory OptionData.fromJson(Map<String, dynamic> json) {
     return OptionData(
       optionId: json['optionId'],
@@ -36,13 +34,11 @@ class OptionData {
     );
   }
 
-  // Save to Local Database
   Future<void> saveToLocalDatabase() async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString(optionId, jsonEncode(toJson()));
   }
 
-  // Load from Local Database
   static Future<OptionData?> loadFromLocalDatabase(String optionId) async {
     final prefs = await SharedPreferences.getInstance();
     String? optionJson = prefs.getString(optionId);
@@ -52,7 +48,6 @@ class OptionData {
     return null;
   }
 
-  // Delete from Local Database
   static Future<void> deleteFromLocalDatabase(String optionId) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.remove(optionId);

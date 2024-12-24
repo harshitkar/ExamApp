@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:google_ml_kit/google_ml_kit.dart';
 
 class TextRecognitionService {
-  /// Extracts text blocks from an image file using the specified script.
   static Future<List<TextBlock>> extractTextBlocks(File imageFile) async {
     final textRecognizer = TextRecognizer(script: TextRecognitionScript.devanagiri);
 
@@ -12,7 +11,6 @@ class TextRecognitionService {
 
       return recognizedText.blocks;
     } catch (e) {
-      print('Error during text recognition: $e');
       return [];
     } finally {
       textRecognizer.close();

@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../models/option_data.dart';
@@ -10,11 +8,11 @@ class OptionTile extends StatefulWidget {
   final bool isSelected;
 
   const OptionTile({
-    Key? key,
+    super.key,
     required this.option,
     required this.onOptionSelected,
     required this.isSelected,
-  }) : super(key: key);
+  });
 
   @override
   _OptionTileState createState() => _OptionTileState();

@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
-class SelectionRow extends StatelessWidget {
+class TextImageSelectionRow extends StatelessWidget {
   final String text;
   final TextEditingController textController;
   final Uint8List? image;
@@ -9,15 +9,15 @@ class SelectionRow extends StatelessWidget {
   final VoidCallback onCaptureImage;
   final ValueChanged<String> onTextChanged;
 
-  const SelectionRow({
-    Key? key,
+  const TextImageSelectionRow({
+    super.key,
     required this.text,
     required this.textController,
     required this.image,
     required this.onSelectText,
     required this.onCaptureImage,
     required this.onTextChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

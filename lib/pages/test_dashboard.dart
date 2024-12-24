@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:ocr_app/models/test_data.dart';
-import 'package:ocr_app/pages/image_text_selection_page.dart';
+import 'package:ocr_app/pages/question_builder_page.dart';
 import 'package:ocr_app/widgets/test_list.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class TestDashboard extends StatefulWidget {
+  const TestDashboard({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<TestDashboard> createState() => _TestDashboardState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _TestDashboardState extends State<TestDashboard> {
   List<TestData> tests = [];
   bool isLoading = true; // Flag for loading state
 
@@ -31,7 +31,6 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         isLoading = false; // Set loading to false if there's an error
       });
-      print('Error loading test data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load test data: $e')),
       );
@@ -46,7 +45,7 @@ class _HomePageState extends State<HomePage> {
         tests.removeAt(index);
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Test deleted successfully')),
+        const SnackBar(content: Text('Test deleted successfully')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -60,7 +59,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ImageTextSelectionPage(testData: test),
+        builder: (context) => QuestionBuilderPage(testData: test),
       ),
     );
   }
@@ -94,7 +93,7 @@ class _HomePageState extends State<HomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ImageTextSelectionPage(testData: TestData()),
+              builder: (context) => QuestionBuilderPage(testData: TestData()),
             ),
           );
         },
