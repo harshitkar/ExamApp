@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/random_id_generator.dart';
 
 class OptionData {
   String optionId;
@@ -10,11 +10,11 @@ class OptionData {
   int optionNumber;
 
   OptionData({
-    String? optionId,
+    this.optionId = '',
     this.optionText = '',
     this.image,
     this.optionNumber = 0,
-  }) : optionId = optionId ?? RandomIdGenerator.generateOptionId();
+  });
 
   Map<String, dynamic> toJson() {
     return {

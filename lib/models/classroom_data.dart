@@ -2,27 +2,29 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Classroom {
-  final String classroomId;
-  final String classroomName;
-  final DateTime createdAt;
+import '../../services/random_id_generator.dart';
 
-  Classroom({
-    required this.classroomId,
-    required this.classroomName,
-    required this.createdAt,
+class ClassroomData {
+  String classroomId;
+  String classroomName;
+  DateTime? createdAt;
+
+  ClassroomData({
+    this.classroomId = '',
+    this.classroomName = '',
+    this.createdAt,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'classroomId': classroomId,
       'classroomName': classroomName,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': createdAt!.toIso8601String(),
     };
   }
 
-  factory Classroom.fromJson(Map<String, dynamic> json) {
-    return Classroom(
+  factory ClassroomData.fromJson(Map<String, dynamic> json) {
+    return ClassroomData(
       classroomId: json['classroomId'],
       classroomName: json['classroomName'],
       createdAt: DateTime.parse(json['createdAt']),
@@ -32,7 +34,11 @@ class Classroom {
   Future<void> saveClassroom() async {
     final prefs = await SharedPreferences.getInstance();
     final classrooms = prefs.getStringList('classrooms') ?? [];
-    classrooms.add(jsonEncode(this.toJson()));
+    classroomId = RandomIdGenerator.generateId();
+    while (classrooms.contains(classroomId)) {
+      classroomId = RandomIdGenerator.generateId();
+    }
+    classrooms.add(jsonEncode(toJson()));
     await prefs.setStringList('classrooms', classrooms);
   }
 
@@ -40,7 +46,7 @@ class Classroom {
     final prefs = await SharedPreferences.getInstance();
     final classrooms = prefs.getStringList('classrooms') ?? [];
     classrooms.removeWhere((jsonStr) {
-      final classroom = Classroom.fromJson(jsonDecode(jsonStr));
+      final classroom = ClassroomData.fromJson(jsonDecode(jsonStr));
       return classroom.classroomId == classroomId;
     });
     await prefs.setStringList('classrooms', classrooms);
@@ -49,22 +55,22 @@ class Classroom {
   Future<void> joinClassroom(String userId, String role) async {
     final prefs = await SharedPreferences.getInstance();
     final userClassrooms = prefs.getStringList('user-classrooms') ?? [];
-    final userClassroom = UserClassroom(userId: userId, classroomId: classroomId, role: role);
+    final userClassroom = UserClassroomData(userId: userId, classroomId: classroomId, role: role);
     userClassrooms.add(jsonEncode(userClassroom.toJson()));
     await prefs.setStringList('user-classrooms', userClassrooms);
   }
 
-  static Future<List<Classroom>> loadAllClassroomsForUser(String userId) async {
+  static Future<List<ClassroomData>> loadAllClassroomsForUser(String userId) async {
     final prefs = await SharedPreferences.getInstance();
     final userClassroomsJson = prefs.getStringList('user-classrooms') ?? [];
     final userClassrooms = userClassroomsJson
-        .map((jsonStr) => UserClassroom.fromJson(jsonDecode(jsonStr)))
+        .map((jsonStr) => UserClassroomData.fromJson(jsonDecode(jsonStr)))
         .where((userClassroom) => userClassroom.userId == userId)
         .toList();
 
     final classroomsJson = prefs.getStringList('classrooms') ?? [];
     return classroomsJson
-        .map((jsonStr) => Classroom.fromJson(jsonDecode(jsonStr)))
+        .map((jsonStr) => ClassroomData.fromJson(jsonDecode(jsonStr)))
         .where((classroom) => userClassrooms.any((userClassroom) => userClassroom.classroomId == classroom.classroomId))
         .toList();
   }
@@ -73,19 +79,19 @@ class Classroom {
     final prefs = await SharedPreferences.getInstance();
     final userClassrooms = prefs.getStringList('user-classrooms') ?? [];
     userClassrooms.removeWhere((jsonStr) {
-      final userClassroom = UserClassroom.fromJson(jsonDecode(jsonStr));
+      final userClassroom = UserClassroomData.fromJson(jsonDecode(jsonStr));
       return userClassroom.userId == userId && userClassroom.classroomId == classroomId;
     });
     await prefs.setStringList('user-classrooms', userClassrooms);
   }
 }
 
-class UserClassroom {
+class UserClassroomData {
   final String userId;
   final String classroomId;
   final String role;
 
-  UserClassroom({
+  UserClassroomData({
     required this.userId,
     required this.classroomId,
     required this.role,
@@ -99,8 +105,8 @@ class UserClassroom {
     };
   }
 
-  factory UserClassroom.fromJson(Map<String, dynamic> json) {
-    return UserClassroom(
+  factory UserClassroomData.fromJson(Map<String, dynamic> json) {
+    return UserClassroomData(
       userId: json['userId'],
       classroomId: json['classroomId'],
       role: json['role'],

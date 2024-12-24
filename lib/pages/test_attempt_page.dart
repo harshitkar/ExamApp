@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'test_dashboard.dart';
+import '../Holders/classroom_holder.dart';
+import 'test_list_page.dart';
 import '../models/test_data.dart';
 import '../widgets/option_tile.dart';
 import '../widgets/question_navigation_widget.dart';
@@ -135,7 +136,6 @@ class _TestAttemptPageState extends State<TestAttemptPage> {
   }
 
   void _computeAndShowResult() {
-    // Compute the result (example logic; replace with your own)
     final totalQuestions = widget.testData.questions.length;
     int correctAnswers = 0;
 
@@ -167,7 +167,7 @@ class _TestAttemptPageState extends State<TestAttemptPage> {
               onPressed: () {
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => const TestDashboard()),
+                  MaterialPageRoute(builder: (context) => TestListPage(classroomData: ClassroomDataHolder.data!)),
                       (route) => false,
                 );
               },

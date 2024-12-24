@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/random_id_generator.dart';
+import '../../services/random_id_generator.dart';
 import 'question_data.dart';
 
 class TestData {
@@ -13,6 +13,7 @@ class TestData {
   DateTime deadlineTime;
   int testTime;
   int result;
+  String groupId;
 
   TestData({
     this.testId = '',
@@ -23,6 +24,7 @@ class TestData {
     DateTime? deadlineTime,
     this.testTime = 0,
     this.result = -1,
+    this.groupId = ''
   })  : questions = questions ?? [...List.generate(1, (index) => QuestionData())],
         postedAt = postedAt ?? DateTime.now(),
         startFrom = startFrom ?? DateTime.now(),
@@ -38,6 +40,7 @@ class TestData {
       'deadlineTime': deadlineTime.toIso8601String(),
       'testTime': testTime,
       'result': result,
+      'groupId': groupId,
     };
   }
 
@@ -54,21 +57,23 @@ class TestData {
       deadlineTime: DateTime.parse(json['deadlineTime']),
       testTime: json['testTime'],
       result: json['result'],
+      groupId: json['groupId'],
     );
   }
 
-  Future<void> saveToLocalDatabase() async {
+  Future<void> saveTestData() async {
     final prefs = await SharedPreferences.getInstance();
     List<String> allTests = prefs.getStringList('tests') ?? [];
+    testId = RandomIdGenerator.generateId();
     while (allTests.contains(testId)) {
-      RandomIdGenerator.generateTestId();
+      testId = RandomIdGenerator.generateId();
     }
     allTests.add(testId);
     prefs.setStringList('tests', allTests);
     prefs.setString(testId, jsonEncode(toJson()));
   }
 
-  static Future<TestData?> loadFromLocalDatabase(String testId) async {
+  static Future<TestData?> loadTestData(String testId) async {
     final prefs = await SharedPreferences.getInstance();
     String? testJson = prefs.getString(testId);
     if (testJson != null) {
@@ -77,7 +82,7 @@ class TestData {
     return null;
   }
 
-  static Future<void> deleteFromLocalDatabase(String testId) async {
+  static Future<void> deleteTestData(String testId) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> allTests = prefs.getStringList('tests') ?? [];
     allTests.remove(testId);
@@ -85,25 +90,55 @@ class TestData {
     prefs.remove(testId);
   }
 
-  static Future<List<TestData>> getAllTestsFromLocalDatabase() async {
+  static Future<List<TestData>> getAllTestData() async {
     final prefs = await SharedPreferences.getInstance();
     List<String> allTests = prefs.getStringList('tests') ?? [];
     List<TestData> tests = [];
 
     for (String testId in allTests) {
       String? testJson = prefs.getString(testId);
-      if (testJson != null) {
-        tests.add(TestData.fromJson(jsonDecode(testJson)));
+
+      if (testJson != null && testJson.isNotEmpty) {
+        try {
+          tests.add(TestData.fromJson(jsonDecode(testJson)));
+        } catch (e) {
+          print("Error decoding test data for testId $testId: $e");
+
+        }
+      } else {
+        print("No data found for testId: $testId or data is empty.");
       }
     }
 
-    tests.sort((b, a) => a.postedAt.compareTo(b.postedAt));
+    tests.sort((a, b) => b.postedAt.compareTo(a.postedAt));
 
     return tests;
   }
 
+  static Future<List<TestData>> getAllTestDataByGroupId(String groupId) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> allTests = prefs.getStringList('tests') ?? [];
+    List<TestData> testsByGroup = [];
+
+    for (String testId in allTests) {
+      String? testJson = prefs.getString(testId);
+      if (testJson != null && testJson.isNotEmpty) {
+        TestData test = TestData.fromJson(jsonDecode(testJson));
+        if (test.groupId == groupId) {
+          testsByGroup.add(test);
+        }
+      } else {
+        print("No data found for testId: $testId");
+      }
+    }
+
+    testsByGroup.sort((a, b) => b.postedAt.compareTo(a.postedAt));
+
+    return testsByGroup;
+  }
+
   void updateTestData() async {
-    await deleteFromLocalDatabase(testId);
-    await saveToLocalDatabase();
+    await deleteTestData(testId);
+    await saveTestData();
   }
 }

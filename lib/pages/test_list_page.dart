@@ -3,16 +3,35 @@ import 'package:ocr_app/models/test_data.dart';
 import 'package:ocr_app/pages/question_builder_page.dart';
 import 'package:ocr_app/widgets/test_list.dart';
 
-class TestDashboard extends StatefulWidget {
-  const TestDashboard({super.key});
+import '../models/classroom_data.dart';
+
+// class TestListPage extends StatefulWidget {
+//   ClassroomData classroomData;
+//
+//   TestListPage({
+//     super.key,
+//     required this.classroomData,
+//   });
+//
+//   @override
+//   State<TestListPage> createState() => _TestListPageState();
+// }
+
+class TestListPage extends StatefulWidget {
+  ClassroomData classroomData;
+
+  TestListPage({
+    super.key,
+    required this.classroomData,
+  });
 
   @override
-  State<TestDashboard> createState() => _TestDashboardState();
+  State<TestListPage> createState() => _TestListPageState();
 }
 
-class _TestDashboardState extends State<TestDashboard> {
+class _TestListPageState extends State<TestListPage> {
   List<TestData> tests = [];
-  bool isLoading = true; // Flag for loading state
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -22,25 +41,27 @@ class _TestDashboardState extends State<TestDashboard> {
 
   Future<void> _loadTestData() async {
     try {
-      List<TestData> loadedTests = await TestData.getAllTestsFromLocalDatabase();
+      List<TestData> loadedTests = await TestData.getAllTestDataByGroupId(widget.classroomData.classroomId);
+
       setState(() {
         tests = loadedTests;
-        isLoading = false; // Data loading complete
+        isLoading = false;
       });
     } catch (e) {
       setState(() {
-        isLoading = false; // Set loading to false if there's an error
+        isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load test data: $e')),
       );
+      print('Failed to load test data: $e');
     }
   }
 
   Future<void> _deleteTest(int index) async {
     final testId = tests[index].testId;
     try {
-      await TestData.deleteFromLocalDatabase(testId);
+      await TestData.deleteTestData(testId);
       setState(() {
         tests.removeAt(index);
       });

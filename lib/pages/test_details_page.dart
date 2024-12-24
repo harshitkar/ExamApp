@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ocr_app/pages/test_dashboard.dart';
+import 'package:ocr_app/pages/test_list_page.dart';
+import '../Holders/classroom_holder.dart';
 import '../models/test_data.dart';
 
 class TestDetailsPage extends StatefulWidget {
@@ -27,6 +28,8 @@ class _TestDetailsPageState extends State<TestDetailsPage> {
 
   @override
   void initState() {
+    isEditTest = widget.testData.testId != '';
+
     super.initState();
     _testNameController = TextEditingController(
         text: widget.testData.testName
@@ -99,14 +102,19 @@ class _TestDetailsPageState extends State<TestDetailsPage> {
       widget.testData.testTime = int.tryParse(_testDurationController.text) ?? 0;
 
       try {
-        await widget.testData.saveToLocalDatabase();
+        if (!isEditTest) {
+          widget.testData.groupId = ClassroomDataHolder.data!.classroomId;
+          await widget.testData.saveTestData();
+        } else {
+          widget.testData.updateTestData();
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Test saved successfully!')),
         );
 
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const TestDashboard()),
+          MaterialPageRoute(builder: (context) => TestListPage(classroomData: ClassroomDataHolder.data!)),
               (route) => false,
         );
 

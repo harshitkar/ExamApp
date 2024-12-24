@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
-
-import 'pages/test_dashboard.dart';
+import 'package:ocr_app/pages/classroom_list_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  clearSharedPreferences();
   runApp(const MyApp());
+}
+
+Future<void> clearSharedPreferences() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.clear();
 }
 
 class MyApp extends StatelessWidget {
@@ -13,11 +19,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'OCR App',
+      title: 'ExamEase',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const TestDashboard(),
+      home: const ClassroomListPage(userId: "Harsh"),
     );
   }
 }

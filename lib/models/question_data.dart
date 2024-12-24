@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/random_id_generator.dart';
+
 import 'option_data.dart';
 
 class QuestionData {
@@ -13,14 +14,13 @@ class QuestionData {
   int correctOptionIndex;
 
   QuestionData({
-    String? questionId,
+    this.questionId = '',
     this.questionText = '',
     this.questionImage,
     List<OptionData>? options,
     this.questionNumber = 0,
     this.correctOptionIndex = 0,
-  })  : questionId = questionId ?? RandomIdGenerator.generateQuestionId(),
-        options = options ?? List.generate(4, (index) => OptionData(optionNumber: index));
+  })  : options = options ?? List.generate(4, (index) => OptionData(optionNumber: index));
 
   Map<String, dynamic> toJson() {
     return {
