@@ -1,19 +1,12 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:ocr_app/Holders/classroom_holder.dart';
+import 'package:ocr_app/Holders/data_holder.dart';
 import 'package:ocr_app/pages/test_list_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/classroom_data.dart';
 
 class ClassroomListPage extends StatefulWidget {
-  final String userId;
 
-  const ClassroomListPage({
-    required this.userId,
-    super.key,
-  });
+  const ClassroomListPage({super.key});
 
   @override
   State<ClassroomListPage> createState() => _ClassroomListPageState();
@@ -31,7 +24,7 @@ class _ClassroomListPageState extends State<ClassroomListPage> {
 
   Future<void> _loadClassrooms() async {
     try {
-      final loadedClassrooms = await ClassroomData.loadAllClassroomsForUser(widget.userId);
+      final loadedClassrooms = await ClassroomData.loadAllClassroomsForUser(DataHolder.currentUser!.userId);
       setState(() {
         classrooms = loadedClassrooms;
         isLoading = false;
@@ -56,7 +49,7 @@ class _ClassroomListPageState extends State<ClassroomListPage> {
 
   Future<void> _leaveClassroom(int index) async {
     final classroomId = classrooms[index].classroomId;
-    await ClassroomData.leaveClassroom(widget.userId, classroomId);
+    await ClassroomData.leaveClassroom(classroomId);
     setState(() {
       classrooms.removeAt(index);
     });
@@ -108,7 +101,7 @@ class _ClassroomListPageState extends State<ClassroomListPage> {
                       );
                       await newClassroom!.saveClassroom();
 
-                      await newClassroom!.joinClassroom(widget.userId, 'teacher');
+                      await newClassroom!.joinClassroom('teacher');
 
                       setState(() {
                         isSubmitting = false;
@@ -183,7 +176,7 @@ class _ClassroomListPageState extends State<ClassroomListPage> {
                   ClassroomData? classroom = await ClassroomData.loadClassroomData(classroomId);
                   if (classroom != null) {
                     print(1);
-                    await classroom.joinClassroom(widget.userId, 'student');
+                    await classroom.joinClassroom('student');
                     setState(() {
                       classrooms.add(classroom);
                     });
@@ -252,11 +245,11 @@ class _ClassroomListPageState extends State<ClassroomListPage> {
                 ],
               ),
               onTap: () {
-                ClassroomDataHolder.data = classroom;
+                DataHolder.currentClassroom = classroom;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => TestListPage(classroomData: classroom),
+                    builder: (context) => const TestListPage(),
                   ),
                 );
               },

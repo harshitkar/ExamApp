@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ocr_app/pages/test_list_page.dart';
-import '../Holders/classroom_holder.dart';
+import '../Holders/data_holder.dart';
 import '../models/test_data.dart';
 
 class TestDetailsPage extends StatefulWidget {
-  final TestData testData;
 
-  const TestDetailsPage({super.key, required this.testData});
+  const TestDetailsPage({super.key});
 
   @override
   State<TestDetailsPage> createState() =>
@@ -28,21 +26,21 @@ class _TestDetailsPageState extends State<TestDetailsPage> {
 
   @override
   void initState() {
-    isEditTest = widget.testData.testId != '';
+    isEditTest = DataHolder.currentTest!.testId != '';
 
     super.initState();
     _testNameController = TextEditingController(
-        text: widget.testData.testName
+        text: DataHolder.currentTest!.testName
     );
     _startTimeController = TextEditingController(
-        text: DateFormat('yyyy-MM-dd HH:mm').format(widget.testData.startFrom)
+        text: DateFormat('yyyy-MM-dd HH:mm').format(DataHolder.currentTest!.startFrom)
     );
     _deadlineController = TextEditingController(
-        text: DateFormat('yyyy-MM-dd HH:mm').format(widget.testData.deadlineTime)
+        text: DateFormat('yyyy-MM-dd HH:mm').format(DataHolder.currentTest!.deadlineTime)
     );
     _testDurationController = TextEditingController(
-        text: widget.testData.testTime > 0
-            ? widget.testData.testTime.toString()
+        text: DataHolder.currentTest!.testTime > 0
+            ? DataHolder.currentTest!.testTime.toString()
             : ''
     );
   }
@@ -87,10 +85,10 @@ class _TestDetailsPageState extends State<TestDetailsPage> {
     setState(() {
       if (isStart) {
         _startDateTime = fullDateTime;
-        widget.testData.startFrom = fullDateTime;
+        DataHolder.currentTest!.startFrom = fullDateTime;
       } else {
         _deadlineDateTime = fullDateTime;
-        widget.testData.deadlineTime = fullDateTime;
+        DataHolder.currentTest!.deadlineTime = fullDateTime;
       }
       controller.text = DateFormat('yyyy-MM-dd HH:mm').format(fullDateTime);
     });
@@ -98,25 +96,26 @@ class _TestDetailsPageState extends State<TestDetailsPage> {
 
   void _onSave() async {
     if (_formKey.currentState?.validate() ?? false) {
-      widget.testData.testName = _testNameController.text;
-      widget.testData.testTime = int.tryParse(_testDurationController.text) ?? 0;
+      DataHolder.currentTest!.testName = _testNameController.text;
+      DataHolder.currentTest!.testTime = int.tryParse(_testDurationController.text) ?? 0;
 
       try {
         if (!isEditTest) {
-          widget.testData.groupId = ClassroomDataHolder.data!.classroomId;
-          await widget.testData.saveTestData();
+          DataHolder.currentTest!.groupId = DataHolder.currentClassroom!.classroomId;
+          DataHolder.currentTest!.saveTestData();
         } else {
-          widget.testData.updateTestData();
+          DataHolder.currentTest!.updateTestData();
         }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Test saved successfully!')),
         );
 
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => TestListPage(classroomData: ClassroomDataHolder.data!)),
-              (route) => false,
-        );
+        DataHolder.currentTest = null;
+
+        int count = 2;
+        Navigator.of(context).popUntil((route) {
+          return count-- <= 0;
+        });
 
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(

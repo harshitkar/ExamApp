@@ -17,7 +17,7 @@ class RandomIdGenerator {
   }
 
   static String generateId() {
-    String questionId = _uuid.v4();
-    return questionId;
+    String id = _uuid.v4();
+    return id;
   }
 }

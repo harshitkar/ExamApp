@@ -9,17 +9,14 @@ import 'package:ocr_app/pages/test_details_page.dart';
 import 'package:ocr_app/services/text_recognition_service.dart';
 import 'package:ocr_app/widgets/image_crop_widget.dart';
 import 'package:ocr_app/widgets/option_editor_drawer.dart';
+
+import '../Holders/data_holder.dart';
 import '../models/question_data.dart';
-import '../models/test_data.dart';
 import '../widgets/question_navigation_widget.dart';
 
 class QuestionBuilderPage extends StatefulWidget {
-  final TestData testData;
 
-  const QuestionBuilderPage({
-    super.key,
-    required this.testData,
-  });
+  const QuestionBuilderPage({super.key});
 
   @override
   State<QuestionBuilderPage> createState() => _QuestionBuilderPageState();
@@ -42,8 +39,8 @@ class _QuestionBuilderPageState extends State<QuestionBuilderPage> {
 
   @override
   void initState() {
-    isEditTest = widget.testData.testId != '';
-    _questions = widget.testData.questions;
+    isEditTest = DataHolder.currentTest!.testId != '';
+    _questions = DataHolder.currentTest!.questions;
     _initializeTextControllers();
     super.initState();
   }
@@ -215,11 +212,11 @@ class _QuestionBuilderPageState extends State<QuestionBuilderPage> {
     });
   }
 
-  void _onSave() {
+  void _onSave() async {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TestDetailsPage(testData: widget.testData),
+        builder: (context) => TestDetailsPage(),
       ),
     );
   }

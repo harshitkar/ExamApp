@@ -1,17 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:ocr_app/models/result_data.dart';
 
-import '../Holders/classroom_holder.dart';
-import 'test_list_page.dart';
-import '../models/test_data.dart';
+import '../Holders/data_holder.dart';
 import '../widgets/option_tile.dart';
 import '../widgets/question_navigation_widget.dart';
 
 class TestAttemptPage extends StatefulWidget {
-  final TestData testData;
 
-  const TestAttemptPage({required this.testData, super.key});
+  const TestAttemptPage({super.key});
 
   @override
   State<TestAttemptPage> createState() => _TestAttemptPageState();
@@ -27,14 +25,14 @@ class _TestAttemptPageState extends State<TestAttemptPage> {
   @override
   void initState() {
     super.initState();
-    selectedOptions = List<int?>.filled(widget.testData.questions.length, null);
-    remainingTimeInSeconds = widget.testData.testTime * 60;
+    selectedOptions = List<int?>.filled(DataHolder.currentTest!.questions.length, null);
+    remainingTimeInSeconds = DataHolder.currentTest!.testTime * 60;
     _startTimer();
 
   }
 
   void _navigateToQuestion(int index) {
-    if (index >= 0 && index < widget.testData.questions.length) {
+    if (index >= 0 && index < DataHolder.currentTest!.questions.length) {
       setState(() {
         currentQuestionIndex = index;
       });
@@ -136,11 +134,11 @@ class _TestAttemptPageState extends State<TestAttemptPage> {
   }
 
   void _computeAndShowResult() {
-    final totalQuestions = widget.testData.questions.length;
+    final totalQuestions = DataHolder.currentTest!.questions.length;
     int correctAnswers = 0;
 
     for (int i = 0; i < totalQuestions; i++) {
-      final question = widget.testData.questions[i];
+      final question = DataHolder.currentTest!.questions[i];
       if (question.correctOptionIndex == selectedOptions[i]) {
         correctAnswers++;
       }
@@ -148,8 +146,10 @@ class _TestAttemptPageState extends State<TestAttemptPage> {
 
     final result = ((correctAnswers / totalQuestions) * 100).round();
 
-    widget.testData.result = result;
-    widget.testData.updateTestData();
+    DataHolder.currentTest!.result = result;
+
+    // ResultData().saveResult();
+    DataHolder.currentTest!.updateTestData();
 
     _showResultDialog(result);
   }
@@ -165,11 +165,11 @@ class _TestAttemptPageState extends State<TestAttemptPage> {
           actions: [
             ElevatedButton(
               onPressed: () {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => TestListPage(classroomData: ClassroomDataHolder.data!)),
-                      (route) => false,
-                );
+                DataHolder.currentTest = null;
+                int count = 2;
+                Navigator.of(context).popUntil((route) {
+                  return count-- <= 0;
+                });
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0A1D37),
@@ -190,8 +190,8 @@ class _TestAttemptPageState extends State<TestAttemptPage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentQuestion = widget.testData.questions[currentQuestionIndex];
-    final totalQuestions = widget.testData.questions.length;
+    final currentQuestion = DataHolder.currentTest!.questions[currentQuestionIndex];
+    final totalQuestions = DataHolder.currentTest!.questions.length;
     final progressPercentage = (currentQuestionIndex + 1) / totalQuestions;
 
     return Scaffold(
@@ -207,7 +207,7 @@ class _TestAttemptPageState extends State<TestAttemptPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    widget.testData.testName,
+                    DataHolder.currentTest!.testName,
                     style: const TextStyle(
                       color: Color(0xFF0A1D37),
                       fontSize: 18,
@@ -324,7 +324,7 @@ class _TestAttemptPageState extends State<TestAttemptPage> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: QuestionNavigationPanel(
                 currentQuestionIndex: currentQuestionIndex,
-                questions: List.generate(widget.testData.questions.length, (index) => 'Q${index + 1}'),
+                questions: List.generate(DataHolder.currentTest!.questions.length, (index) => 'Q${index + 1}'),
                 onNavigateToQuestion: _navigateToQuestion,
                 addNewQuestionEnabled: false,
               ),

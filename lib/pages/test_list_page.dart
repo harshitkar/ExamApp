@@ -1,29 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:ocr_app/Holders/data_holder.dart';
 import 'package:ocr_app/models/test_data.dart';
 import 'package:ocr_app/pages/question_builder_page.dart';
 import 'package:ocr_app/widgets/test_list.dart';
 
-import '../models/classroom_data.dart';
-
-// class TestListPage extends StatefulWidget {
-//   ClassroomData classroomData;
-//
-//   TestListPage({
-//     super.key,
-//     required this.classroomData,
-//   });
-//
-//   @override
-//   State<TestListPage> createState() => _TestListPageState();
-// }
-
 class TestListPage extends StatefulWidget {
-  ClassroomData classroomData;
 
-  TestListPage({
-    super.key,
-    required this.classroomData,
-  });
+  const TestListPage({super.key});
 
   @override
   State<TestListPage> createState() => _TestListPageState();
@@ -39,9 +22,15 @@ class _TestListPageState extends State<TestListPage> {
     _loadTestData();
   }
 
+  @override
+  void dispose() {
+    DataHolder.currentClassroom = null;
+    super.dispose();
+  }
+
   Future<void> _loadTestData() async {
     try {
-      List<TestData> loadedTests = await TestData.getAllTestDataByGroupId(widget.classroomData.classroomId);
+      List<TestData> loadedTests = await TestData.getAllTestData();
 
       setState(() {
         tests = loadedTests;
@@ -76,11 +65,11 @@ class _TestListPageState extends State<TestListPage> {
   }
 
   Future<void> _editTest(int index) async {
-    final test = tests[index];
+    DataHolder.currentTest = tests[index];
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => QuestionBuilderPage(testData: test),
+        builder: (context) => QuestionBuilderPage(),
       ),
     );
   }
@@ -89,7 +78,7 @@ class _TestListPageState extends State<TestListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ExamEase'),
+        title: Text(DataHolder.currentClassroom!.classroomName),
       ),
       body: Container(
         color: Colors.white,
@@ -111,10 +100,11 @@ class _TestListPageState extends State<TestListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          DataHolder.currentTest = TestData();
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => QuestionBuilderPage(testData: TestData()),
+              builder: (context) => QuestionBuilderPage(),
             ),
           );
         },

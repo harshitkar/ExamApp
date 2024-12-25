@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ocr_app/models/test_data.dart';
 import 'package:ocr_app/pages/test_attempt_page.dart';
 
+import '../Holders/data_holder.dart';
+
 class TestActionButtons extends StatelessWidget {
   final TestData test;
 
@@ -12,10 +14,11 @@ class TestActionButtons extends StatelessWidget {
     return test.result == -1 ?
     ElevatedButton(
       onPressed: () {
+        DataHolder.currentTest = test;
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => TestAttemptPage(testData: test),
+            builder: (context) => const TestAttemptPage(),
           ),
         );
       },

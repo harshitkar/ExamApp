@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:ocr_app/Holders/data_holder.dart';
+import 'package:ocr_app/models/user_data.dart';
 import 'package:ocr_app/pages/classroom_list_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  clearSharedPreferences();
+void main() async {
+  // Ensure the Flutter bindings are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Clear shared preferences
+  await clearSharedPreferences();
+  // DataHolder.currentUser = UserData(userId: "Harsh1234", username: 'Harsh',phoneNumber: "9924791022");
+  DataHolder.currentUser = UserData(userId: "Onkar4321", username: 'Onkar',phoneNumber: "9924791022");
+
   runApp(const MyApp());
 }
 
@@ -23,9 +32,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const ClassroomListPage(userId: "Harsh"),
-
-      // home: const ClassroomListPage(userId: "Kunal"),
+      home: const ClassroomListPage(),
     );
   }
 }

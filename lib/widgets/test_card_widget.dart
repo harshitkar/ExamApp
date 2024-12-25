@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ocr_app/models/test_data.dart';
-import 'package:ocr_app/pages/test_attempt_page.dart';
 import 'package:ocr_app/widgets/test_action_button.dart';
 
 class TestCardWidget extends StatelessWidget {
@@ -42,16 +41,6 @@ class TestCardWidget extends StatelessWidget {
       shadowColor: Colors.black.withOpacity(0.1),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          if (test.testTime == -1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => TestAttemptPage(testData: test),
-              ),
-            );
-          }
-        },
         child: Stack(
           children: [
             Container(

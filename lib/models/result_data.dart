@@ -1,8 +1,11 @@
 import 'dart:convert';
 
+import 'package:ocr_app/Holders/data_holder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../services/random_id_generator.dart';
 
 class ResultData {
+  String resultId;
   String userId;
   String testId;
   int result;
@@ -10,14 +13,19 @@ class ResultData {
 
   ResultData({
     String? resultId,
-    this.userId = '',
-    this.testId = '',
-    this.result = 0,
+    String? userId = '',
+    String? testId = '',
+    int? result,
     DateTime? submittedAt,
-  })  : submittedAt = submittedAt ?? DateTime.now();
+  })  : resultId = resultId ?? RandomIdGenerator.generateId(),
+        submittedAt = submittedAt ?? DateTime.now(),
+        testId = testId ?? DataHolder.currentTest!.testId,
+        userId = userId ?? DataHolder.currentUser!.userId,
+        result = result ?? DataHolder.currentTest!.result;
 
   Map<String, dynamic> toJson() {
     return {
+      'resultId': resultId,
       'userId': userId,
       'testId': testId,
       'result': result,
@@ -27,6 +35,7 @@ class ResultData {
 
   factory ResultData.fromJson(Map<String, dynamic> json) {
     return ResultData(
+      resultId: json['resultId'],
       userId: json['userId'],
       testId: json['testId'],
       result: json['result'],
@@ -36,46 +45,29 @@ class ResultData {
 
   Future<void> saveResult() async {
     final prefs = await SharedPreferences.getInstance();
-    final results = prefs.getStringList('results') ?? [];
-    results.add(jsonEncode(toJson()));
-    await prefs.setStringList('results', results);
+    List<String> allResults = prefs.getStringList('') ?? [];
+    resultId = RandomIdGenerator.generateId();
+    while (allResults.contains(resultId)) {
+      resultId = RandomIdGenerator.generateId();
+    }
+    allResults.add(resultId);
+    prefs.setStringList('results', allResults);
+    prefs.setString(resultId, jsonEncode(toJson()));
   }
 
-  static Future<List<ResultData>> loadAllByTestId(String testId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final resultsJson = prefs.getStringList('results') ?? [];
 
-    return resultsJson
-        .map((jsonStr) => ResultData.fromJson(jsonDecode(jsonStr)))
-        .where((result) => result.testId == testId)
-        .toList();
-  }
-
-  static Future<List<ResultData>> loadAllByUserId(String userId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final resultsJson = prefs.getStringList('results') ?? [];
-
-    return resultsJson
-        .map((jsonStr) => ResultData.fromJson(jsonDecode(jsonStr)))
-        .where((result) => result.userId == userId)
-        .toList();
-  }
-
-  static Future<ResultData?> loadResult(String userId, String testId) async {
+  Future<int> getResult() async {
     final prefs = await SharedPreferences.getInstance();
     final resultsJson = prefs.getStringList('results') ?? [];
     for (var jsonStr in resultsJson) {
       final result = ResultData.fromJson(jsonDecode(jsonStr));
       if (result.testId == testId && result.userId == userId) {
-        return result;
+        print(result.result);
+        return result.result;
       }
     }
-    return null;
-  }
-
-  Future<void> updateResult() async {
-    deleteResult();
-    saveResult();
+    print(-1);
+    return -1;
   }
 
   Future<void> deleteResult() async {
@@ -86,5 +78,11 @@ class ResultData {
       return result.testId == testId && result.userId == userId;
     });
     await prefs.setStringList('results', results);
+  }
+
+  static Future<List<ResultData>> getAllResults() async {
+    final prefs = await SharedPreferences.getInstance();
+    final resultsJson = prefs.getStringList('results') ?? [];
+    return resultsJson.map((jsonStr) => ResultData.fromJson(jsonDecode(jsonStr))).toList();
   }
 }

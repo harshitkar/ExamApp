@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/random_id_generator.dart';
+import '../Holders/data_holder.dart';
 
 class ClassroomData {
   String classroomId;
@@ -64,10 +65,10 @@ class ClassroomData {
     await prefs.setStringList('classrooms', classrooms);
   }
 
-  Future<void> joinClassroom(String userId, String role) async {
+  Future<void> joinClassroom(String role) async {
     final prefs = await SharedPreferences.getInstance();
     final userClassrooms = prefs.getStringList('user-classrooms') ?? [];
-    final userClassroom = UserClassroomData(userId: userId, classroomId: classroomId, role: role);
+    final userClassroom = UserClassroomData(userId: DataHolder.currentUser!.userId, classroomId: classroomId, role: role);
     userClassrooms.add(jsonEncode(userClassroom.toJson()));
     await prefs.setStringList('user-classrooms', userClassrooms);
   }
@@ -87,7 +88,17 @@ class ClassroomData {
         .toList();
   }
 
-  static Future<void> leaveClassroom(String userId, String classroomId) async {
+  static Future<void> leaveClassroom(String classroomId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userClassrooms = prefs.getStringList('user-classrooms') ?? [];
+    userClassrooms.removeWhere((jsonStr) {
+      final userClassroom = UserClassroomData.fromJson(jsonDecode(jsonStr));
+      return userClassroom.userId == DataHolder.currentUser!.userId && userClassroom.classroomId == classroomId;
+    });
+    await prefs.setStringList('user-classrooms', userClassrooms);
+  }
+
+  static Future<void> removeStudent(String userId, String classroomId) async {
     final prefs = await SharedPreferences.getInstance();
     final userClassrooms = prefs.getStringList('user-classrooms') ?? [];
     userClassrooms.removeWhere((jsonStr) {
